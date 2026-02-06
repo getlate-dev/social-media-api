@@ -508,6 +508,11 @@ class SocialMediaAPI {
     return this.request('/shorten', { method: 'POST', body: options });
   }
 
+  /** Alias for shortLink */
+  async shorten(options: Record<string, any>): Promise<{ status: string }> {
+    return this.shortLink(options);
+  }
+
   async shortLinkAnalytics(options: { id: string }): Promise<{ status: string }> {
     return this.request(`/links/${options.id}`);
   }

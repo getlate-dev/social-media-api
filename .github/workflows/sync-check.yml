@@ -10,6 +10,8 @@ jobs:
   check:
     name: Check for new Ayrshare methods
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
 
     steps:
       - name: Checkout repository
@@ -33,26 +35,21 @@ jobs:
           const AyrshareSDK = (await import('social-media-api')).default;
           const instance = new AyrshareSDK('dummy_key');
           const proto = Object.getPrototypeOf(instance);
-          const ayrshareInternal = new Set(['constructor']);
+          // Internal/utility methods to ignore from both sides
+          const ignore = new Set(['constructor', 'getHeaders', 'setProfileKey']);
           const ayrshireMethods = new Set();
           for (const name of Object.getOwnPropertyNames(proto)) {
-            if (!ayrshareInternal.has(name) && typeof proto[name] === 'function' && !name.startsWith('_')) {
+            if (!ignore.has(name) && typeof proto[name] === 'function' && !name.startsWith('_')) {
               ayrshireMethods.add(name);
             }
           }
 
-          // Extract public async methods from our SDK
+          // Extract public methods from our SDK (only class methods, not control flow)
           const ourSource = readFileSync('src/index.ts', 'utf-8');
-          const ourInternal = new Set(['request']);
           const ourMethods = new Set();
-          for (const match of ourSource.matchAll(/^\s+async\s+(\w+)\s*\(/gm)) {
-            if (!ourInternal.has(match[1])) {
-              ourMethods.add(match[1]);
-            }
-          }
-          // Also add non-async public methods
-          for (const match of ourSource.matchAll(/^\s+(\w+)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{/gm)) {
-            if (!ourInternal.has(match[1]) && match[1] !== 'constructor') {
+          // Match "  async methodName(" - class methods are indented with 2 spaces
+          for (const match of ourSource.matchAll(/^  async (\w+)\s*\(/gm)) {
+            if (match[1] !== 'request') {
               ourMethods.add(match[1]);
             }
           }
