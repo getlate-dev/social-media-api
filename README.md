@@ -1,4 +1,4 @@
-# @getlate/social-media-api
+# @getlatedev/social-media-api
 
 Drop-in replacement for the [Ayrshare](https://www.ayrshare.com/) `social-media-api` SDK, powered by [Late](https://getlate.dev).
 
@@ -6,14 +6,14 @@ Drop-in replacement for the [Ayrshare](https://www.ayrshare.com/) `social-media-
 
 ```bash
 npm uninstall social-media-api
-npm install @getlate/social-media-api
+npm install @getlatedev/social-media-api
 ```
 
 Then update your import:
 
 ```diff
 - import SocialMediaAPI from 'social-media-api';
-+ import SocialMediaAPI from '@getlate/social-media-api';
++ import SocialMediaAPI from '@getlatedev/social-media-api';
 
 const social = new SocialMediaAPI('your_late_api_key');
 ```
@@ -29,7 +29,7 @@ That's it. All method signatures are identical to the Ayrshare SDK.
 ## Example
 
 ```typescript
-import SocialMediaAPI from '@getlate/social-media-api';
+import SocialMediaAPI from '@getlatedev/social-media-api';
 
 const social = new SocialMediaAPI('your_late_api_key');
 

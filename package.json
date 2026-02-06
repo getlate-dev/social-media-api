@@ -1,5 +1,5 @@
 {
-  "name": "@getlate/social-media-api",
+  "name": "@getlatedev/social-media-api",
   "version": "1.0.0",
   "description": "Drop-in replacement for the Ayrshare social-media-api SDK, powered by Late",
   "main": "dist/index.js",
