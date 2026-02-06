@@ -12,6 +12,286 @@
 
 const BASE_URL = 'https://getlate.dev/api';
 
+// ─── Exported Types ───
+
+export interface CreatePostOptions {
+  post?: string;
+  platforms?: string[];
+  mediaUrls?: string[];
+  isVideo?: boolean;
+  scheduleDate?: string;
+  title?: string;
+  visibility?: string;
+  shortenLinks?: boolean;
+  notes?: string;
+  firstComment?: string;
+  idempotencyKey?: string;
+  twitterOptions?: Record<string, any>;
+  instagramOptions?: Record<string, any>;
+  youtubeOptions?: Record<string, any>;
+  tikTokOptions?: Record<string, any>;
+  linkedInOptions?: Record<string, any>;
+  pinterestOptions?: Record<string, any>;
+  redditOptions?: Record<string, any>;
+  faceBookOptions?: Record<string, any>;
+  threadsOptions?: Record<string, any>;
+  gmb?: Record<string, any>;
+  profileKeys?: string[];
+}
+
+export interface DeletePostOptions {
+  id?: string;
+  bulk?: string[];
+}
+
+export interface GetPostOptions {
+  id: string;
+}
+
+export interface RetryPostOptions {
+  id: string;
+}
+
+export interface UpdatePostOptions {
+  id: string;
+  post?: string;
+  mediaUrls?: string[];
+  scheduleDate?: string;
+}
+
+export interface HistoryOptions {
+  lastRecords?: number;
+  lastDays?: number;
+  platform?: string;
+  status?: string;
+  id?: string;
+}
+
+export interface CreateProfileOptions {
+  title: string;
+}
+
+export interface DeleteProfileOptions {
+  profileKey: string;
+}
+
+export interface UpdateProfileOptions {
+  profileKey: string;
+  title?: string;
+}
+
+export interface UnlinkSocialOptions {
+  profileKey: string;
+  platform: string;
+}
+
+export interface GenerateJWTOptions {
+  domain: string;
+  privateKey: string;
+  profileKey?: string;
+}
+
+export interface UploadOptions {
+  file: string;
+  fileName?: string;
+  description?: string;
+}
+
+export interface MediaUploadUrlOptions {
+  fileName: string;
+  contentType: string;
+}
+
+export interface VerifyMediaExistsOptions {
+  mediaUrl: string;
+}
+
+export interface AnalyticsPostOptions {
+  id: string;
+  platforms?: string[];
+}
+
+export interface AnalyticsSocialOptions {
+  platforms: string[];
+}
+
+export interface PostCommentOptions {
+  id: string;
+  platforms: string[];
+  comment: string;
+}
+
+export interface GetCommentsOptions {
+  id: string;
+}
+
+export interface DeleteCommentsOptions {
+  id: string;
+  platforms?: string[];
+}
+
+export interface ReplyCommentOptions {
+  commentId: string;
+  platforms: string[];
+  comment: string;
+}
+
+export interface RegisterWebhookOptions {
+  action: string;
+  url: string;
+}
+
+export interface UnregisterWebhookOptions {
+  action: string;
+}
+
+export interface SetAutoScheduleOptions {
+  schedule: Record<string, string[]>;
+  title?: string;
+}
+
+export interface DeleteAutoScheduleOptions {
+  title: string;
+}
+
+export interface FeedAddOptions {
+  url: string;
+  type?: string;
+}
+
+export interface FeedDeleteOptions {
+  id: string;
+}
+
+export interface FeedUpdateOptions {
+  id: string;
+  useFirstImage?: boolean;
+  autoHashtag?: boolean;
+}
+
+export interface AutoHashtagsOptions {
+  post: string;
+  position?: string;
+  max?: number;
+}
+
+export interface RecommendHashtagsOptions {
+  keyword: string;
+}
+
+export interface CheckBannedHashtagsOptions {
+  hashtag: string;
+}
+
+export interface ReviewsOptions {
+  platform?: string;
+}
+
+export interface ReviewOptions {
+  id: string;
+  platform?: string;
+}
+
+export interface ReplyReviewOptions {
+  reviewId: string;
+  platform: string;
+  reply: string;
+}
+
+export interface DeleteReplyReviewOptions {
+  reviewId: string;
+  platform: string;
+}
+
+export interface GeneratePostOptions {
+  text: string;
+  hashtags?: boolean;
+  emojis?: boolean;
+  twitter?: boolean;
+}
+
+export interface GenerateRewriteOptions {
+  post: string;
+  emojis?: boolean;
+  hashtags?: boolean;
+  twitter?: boolean;
+  rewrites?: number;
+}
+
+export interface GenerateTranscriptionOptions {
+  videoUrl: string;
+}
+
+export interface GenerateTranslationOptions {
+  text: string;
+  lang: string;
+}
+
+export interface GenerateAltTextOptions {
+  url: string;
+  keywords?: string;
+  lang?: string;
+}
+
+export interface PostResponse {
+  status: string;
+  id?: string;
+  refId?: string;
+  postIds?: Array<{
+    status: string;
+    id: string | null;
+    postUrl: string | null;
+    platform: string;
+  }>;
+  scheduleDate?: string;
+  post?: string;
+  mediaUrls?: string[];
+  [key: string]: any;
+}
+
+export interface HistoryItem {
+  id: string;
+  post: string;
+  platforms: string[];
+  mediaUrls: string[];
+  status: string;
+  created: string;
+  scheduleDate?: string;
+  postIds: Array<{
+    status: string;
+    id: string | null;
+    postUrl: string | null;
+    platform: string;
+  }>;
+  [key: string]: any;
+}
+
+export interface UserResponse {
+  status: string;
+  email: string;
+  displayNames: Record<string, string>;
+  activeSocialAccounts: string[];
+  created: string;
+  [key: string]: any;
+}
+
+export interface ProfileResponse {
+  status: string;
+  profileKey: string;
+  title: string;
+  created: string;
+  [key: string]: any;
+}
+
+export interface ErrorResponse {
+  status: 'error';
+  code: number;
+  message: string;
+  [key: string]: any;
+}
+
+// ─── Internal ───
+
 interface RequestOptions {
   method?: string;
   body?: any;
@@ -36,52 +316,29 @@ class SocialMediaAPI {
 
   // ─── Core Post Methods ───
 
-  async post(options: {
-    post?: string;
-    platforms?: string[];
-    mediaUrls?: string[];
-    isVideo?: boolean;
-    scheduleDate?: string;
-    title?: string;
-    visibility?: string;
-    shortenLinks?: boolean;
-    notes?: string;
-    firstComment?: string;
-    idempotencyKey?: string;
-    twitterOptions?: Record<string, any>;
-    instagramOptions?: Record<string, any>;
-    youtubeOptions?: Record<string, any>;
-    tikTokOptions?: Record<string, any>;
-    linkedInOptions?: Record<string, any>;
-    pinterestOptions?: Record<string, any>;
-    redditOptions?: Record<string, any>;
-    faceBookOptions?: Record<string, any>;
-    threadsOptions?: Record<string, any>;
-    gmb?: Record<string, any>;
-    profileKeys?: string[];
-  }) {
+  async post(options: CreatePostOptions): Promise<PostResponse> {
     return this.request('/post', { method: 'POST', body: options });
   }
 
-  async delete(options: { id?: string; bulk?: string[] }) {
+  async delete(options: DeletePostOptions): Promise<PostResponse> {
     return this.request('/post', { method: 'DELETE', body: options });
   }
 
-  async getPost(options: { id: string }) {
+  async getPost(options: GetPostOptions): Promise<HistoryItem> {
     return this.request(`/post/${options.id}`);
   }
 
-  async retryPost(options: { id: string }) {
+  async retryPost(options: RetryPostOptions): Promise<PostResponse> {
     return this.request('/post/retry', { method: 'PUT', body: options });
   }
 
-  async updatePost(options: { id: string; post?: string; mediaUrls?: string[]; scheduleDate?: string }) {
+  async updatePost(options: UpdatePostOptions): Promise<PostResponse> {
     return this.request('/post', { method: 'PUT', body: options });
   }
 
   // ─── History ───
 
-  async history(options?: { lastRecords?: number; lastDays?: number; platform?: string; status?: string; id?: string }) {
+  async history(options?: HistoryOptions): Promise<HistoryItem[] | HistoryItem> {
     if (options?.id) {
       return this.request(`/history/${options.id}`);
     }
@@ -96,189 +353,189 @@ class SocialMediaAPI {
 
   // ─── User & Profiles ───
 
-  async user() {
+  async user(): Promise<UserResponse> {
     return this.request('/user');
   }
 
-  async createProfile(options: { title: string }) {
+  async createProfile(options: CreateProfileOptions): Promise<ProfileResponse> {
     return this.request('/profiles/profile', { method: 'POST', body: options });
   }
 
-  async deleteProfile(options: { profileKey: string }) {
+  async deleteProfile(options: DeleteProfileOptions): Promise<{ status: string }> {
     return this.request('/profiles/profile', { method: 'DELETE', body: options });
   }
 
-  async updateProfile(options: { profileKey: string; title?: string }) {
+  async updateProfile(options: UpdateProfileOptions): Promise<ProfileResponse> {
     return this.request('/profiles/profile', { method: 'PUT', body: options });
   }
 
-  async getProfiles() {
+  async getProfiles(): Promise<{ status: string; profiles: ProfileResponse[] }> {
     return this.request('/profiles');
   }
 
-  async unlinkSocial(options: { profileKey: string; platform: string }) {
+  async unlinkSocial(options: UnlinkSocialOptions): Promise<{ status: string }> {
     return this.request('/profiles/social', { method: 'DELETE', body: options });
   }
 
-  async generateJWT(options: { domain: string; privateKey: string; profileKey?: string }) {
+  async generateJWT(options: GenerateJWTOptions): Promise<{ status: string }> {
     return this.request('/profiles/generateJWT', { method: 'POST', body: options });
   }
 
   // ─── Media ───
 
-  async upload(options: { file: string; fileName?: string; description?: string }) {
+  async upload(options: UploadOptions): Promise<{ status: string; url?: string; [key: string]: any }> {
     return this.request('/upload', { method: 'POST', body: options });
   }
 
-  async media() {
+  async media(): Promise<{ status: string; media: any[] }> {
     return this.request('/media');
   }
 
-  async mediaUploadUrl(options: { fileName: string; contentType: string }) {
+  async mediaUploadUrl(options: MediaUploadUrlOptions): Promise<{ status: string; uploadUrl: string; accessUrl: string; contentType: string }> {
     const params = new URLSearchParams({ fileName: options.fileName, contentType: options.contentType });
     return this.request(`/media/uploadUrl?${params.toString()}`);
   }
 
-  async verifyMediaExists(options: { mediaUrl: string }) {
+  async verifyMediaExists(options: VerifyMediaExistsOptions): Promise<{ status: string; exists: boolean; contentType?: string }> {
     return this.request('/media/urlExists', { method: 'POST', body: options });
   }
 
-  async resizeImage(options: Record<string, any>) {
+  async resizeImage(options: Record<string, any>): Promise<{ status: string }> {
     return this.request('/media/resize', { method: 'POST', body: options });
   }
 
-  async mediaMeta() {
+  async mediaMeta(): Promise<{ status: string }> {
     return this.request('/media/meta');
   }
 
   // ─── Analytics ───
 
-  async analyticsPost(options: { id: string; platforms?: string[] }) {
+  async analyticsPost(options: AnalyticsPostOptions): Promise<{ status: string; id: string; analytics: Record<string, any> }> {
     return this.request('/analytics/post', { method: 'POST', body: options });
   }
 
-  async analyticsSocial(options: { platforms: string[] }) {
+  async analyticsSocial(options: AnalyticsSocialOptions): Promise<{ status: string; analytics: Record<string, any> }> {
     return this.request('/analytics/social', { method: 'POST', body: options });
   }
 
-  async analyticsLinks() {
+  async analyticsLinks(): Promise<{ status: string }> {
     return this.request('/analytics/links');
   }
 
   // ─── Comments ───
 
-  async postComment(options: { id: string; platforms: string[]; comment: string }) {
+  async postComment(options: PostCommentOptions): Promise<{ status: string }> {
     return this.request('/comments', { method: 'POST', body: options });
   }
 
-  async getComments(options: { id: string }) {
+  async getComments(options: GetCommentsOptions): Promise<{ status: string; comments: any[] }> {
     return this.request(`/comments/${options.id}`);
   }
 
-  async deleteComments(options: { id: string; platforms?: string[] }) {
+  async deleteComments(options: DeleteCommentsOptions): Promise<{ status: string }> {
     return this.request(`/comments/${options.id}`, { method: 'DELETE', body: options });
   }
 
-  async replyComment(options: { commentId: string; platforms: string[]; comment: string }) {
+  async replyComment(options: ReplyCommentOptions): Promise<{ status: string }> {
     return this.request('/comments/reply', { method: 'POST', body: options });
   }
 
   // ─── Webhooks ───
 
-  async registerWebhook(options: { action: string; url: string }) {
+  async registerWebhook(options: RegisterWebhookOptions): Promise<{ status: string }> {
     return this.request('/hook/webhook', { method: 'POST', body: options });
   }
 
-  async unregisterWebhook(options: { action: string }) {
+  async unregisterWebhook(options: UnregisterWebhookOptions): Promise<{ status: string }> {
     return this.request('/hook/webhook', { method: 'DELETE', body: options });
   }
 
-  async listWebhooks() {
+  async listWebhooks(): Promise<{ status: string; webhooks: any[] }> {
     return this.request('/hook/webhook');
   }
 
   // ─── Auto-Schedule ───
 
-  async setAutoSchedule(options: { schedule: Record<string, string[]>; title?: string }) {
+  async setAutoSchedule(options: SetAutoScheduleOptions): Promise<{ status: string }> {
     return this.request('/auto-schedule/set', { method: 'POST', body: options });
   }
 
-  async deleteAutoSchedule(options: { title: string }) {
+  async deleteAutoSchedule(options: DeleteAutoScheduleOptions): Promise<{ status: string }> {
     return this.request('/auto-schedule/delete', { method: 'DELETE', body: options });
   }
 
-  async listAutoSchedule() {
+  async listAutoSchedule(): Promise<{ status: string; schedules: any[] }> {
     return this.request('/auto-schedule/list');
   }
 
   // ─── Feed ───
 
-  async feedAdd(options: { url: string; type?: string }) {
+  async feedAdd(options: FeedAddOptions): Promise<{ status: string }> {
     return this.request('/feed', { method: 'POST', body: options });
   }
 
-  async feedDelete(options: { id: string }) {
+  async feedDelete(options: FeedDeleteOptions): Promise<{ status: string }> {
     return this.request('/feed', { method: 'DELETE', body: options });
   }
 
-  async feedGet() {
+  async feedGet(): Promise<{ status: string }> {
     return this.request('/feed');
   }
 
-  async feedUpdate(options: { id: string; useFirstImage?: boolean; autoHashtag?: boolean }) {
+  async feedUpdate(options: FeedUpdateOptions): Promise<{ status: string }> {
     return this.request('/feed', { method: 'PUT', body: options });
   }
 
   // ─── Hashtags ───
 
-  async autoHashtags(options: { post: string; position?: string; max?: number }) {
+  async autoHashtags(options: AutoHashtagsOptions): Promise<{ status: string }> {
     return this.request('/hashtags/auto', { method: 'POST', body: options });
   }
 
-  async recommendHashtags(options: { keyword: string }) {
+  async recommendHashtags(options: RecommendHashtagsOptions): Promise<{ status: string }> {
     const params = new URLSearchParams({ keyword: options.keyword });
     return this.request(`/hashtags/recommend?${params.toString()}`);
   }
 
-  async checkBannedHashtags(options: { hashtag: string }) {
+  async checkBannedHashtags(options: CheckBannedHashtagsOptions): Promise<{ status: string; hashtag: string; isBanned: boolean }> {
     const params = new URLSearchParams({ hashtag: options.hashtag });
     return this.request(`/hashtags/banned?${params.toString()}`);
   }
 
   // ─── Links ───
 
-  async shortLink(options: Record<string, any>) {
+  async shortLink(options: Record<string, any>): Promise<{ status: string }> {
     return this.request('/shorten', { method: 'POST', body: options });
   }
 
-  async shortLinkAnalytics(options: { id: string }) {
+  async shortLinkAnalytics(options: { id: string }): Promise<{ status: string }> {
     return this.request(`/links/${options.id}`);
   }
 
   // ─── Reviews ───
 
-  async reviews(options?: { platform?: string }) {
+  async reviews(options?: ReviewsOptions): Promise<{ status: string; reviews: any[] }> {
     const params = new URLSearchParams();
     if (options?.platform) params.set('platform', options.platform);
     const qs = params.toString();
     return this.request(`/reviews${qs ? `?${qs}` : ''}`);
   }
 
-  async review(options: { id: string; platform?: string }) {
+  async review(options: ReviewOptions): Promise<{ status: string }> {
     return this.request(`/reviews/${options.id}`);
   }
 
-  async replyReview(options: { reviewId: string; platform: string; reply: string }) {
+  async replyReview(options: ReplyReviewOptions): Promise<{ status: string }> {
     return this.request('/reviews', { method: 'POST', body: options });
   }
 
-  async deleteReplyReview(options: { reviewId: string; platform: string }) {
+  async deleteReplyReview(options: DeleteReplyReviewOptions): Promise<{ status: string }> {
     return this.request('/reviews', { method: 'DELETE', body: options });
   }
 
   // ─── Brand ───
 
-  async getBrandByUser(options?: Record<string, any>) {
+  async getBrandByUser(options?: Record<string, any>): Promise<{ status: string }> {
     const params = new URLSearchParams();
     if (options) {
       for (const [key, value] of Object.entries(options)) {
@@ -291,23 +548,23 @@ class SocialMediaAPI {
 
   // ─── AI Generation ───
 
-  async generatePost(options: { text: string; hashtags?: boolean; emojis?: boolean; twitter?: boolean }) {
+  async generatePost(options: GeneratePostOptions): Promise<{ status: string }> {
     return this.request('/generate/post', { method: 'POST', body: options });
   }
 
-  async generateRewrite(options: { post: string; emojis?: boolean; hashtags?: boolean; twitter?: boolean; rewrites?: number }) {
+  async generateRewrite(options: GenerateRewriteOptions): Promise<{ status: string }> {
     return this.request('/generate/rewrite', { method: 'POST', body: options });
   }
 
-  async generateTranscription(options: { videoUrl: string }) {
+  async generateTranscription(options: GenerateTranscriptionOptions): Promise<{ status: string }> {
     return this.request('/generate/transcription', { method: 'POST', body: options });
   }
 
-  async generateTranslation(options: { text: string; lang: string }) {
+  async generateTranslation(options: GenerateTranslationOptions): Promise<{ status: string }> {
     return this.request('/generate/translation', { method: 'POST', body: options });
   }
 
-  async generateAltText(options: { url: string; keywords?: string; lang?: string }) {
+  async generateAltText(options: GenerateAltTextOptions): Promise<{ status: string }> {
     return this.request('/generate/altText', { method: 'POST', body: options });
   }
 

@@ -1,0 +1,23 @@
+name: NPM Token Expiry Reminder
+
+on:
+  schedule:
+    - cron: '0 9 1 * *' # 1st of every month at 9am UTC
+
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check token expiry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check NPM token
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ secrets.NPM_TOKEN }}" https://registry.npmjs.org/-/npm/v1/user)
+          if [ "$RESPONSE" = "401" ] || [ "$RESPONSE" = "403" ]; then
+            echo "::error::NPM_TOKEN is expired or invalid (HTTP $RESPONSE). Generate a new granular token at https://www.npmjs.com/settings/mikipalet/tokens and update the secret."
+            exit 1
+          else
+            echo "NPM token is valid (HTTP $RESPONSE)"
+          fi
