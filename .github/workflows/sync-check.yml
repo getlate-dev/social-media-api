@@ -27,51 +27,54 @@ jobs:
         id: compare
         run: |
           cat > compare.mjs << 'SCRIPT'
-          import { readFileSync } from 'fs';
+          import { readFileSync, appendFileSync } from 'fs';
 
-          // Extract methods from Ayrshare SDK
-          const ayrshareSource = readFileSync('node_modules/social-media-api/index.js', 'utf-8');
-          const ayrshareProto = ayrshareSource.matchAll(/(?:async\s+)?(\w+)\s*\(/g);
-          const ayrshareConstructor = new Set(['constructor', 'request', 'headers']);
+          // Extract public methods from Ayrshare SDK by instantiating the class
+          const AyrshareSDK = (await import('social-media-api')).default;
+          const instance = new AyrshareSDK('dummy_key');
+          const proto = Object.getPrototypeOf(instance);
+          const ayrshareInternal = new Set(['constructor']);
           const ayrshireMethods = new Set();
-          for (const match of ayrshareProto) {
-            if (!ayrshareConstructor.has(match[1]) && !match[1].startsWith('_')) {
-              ayrshireMethods.add(match[1]);
+          for (const name of Object.getOwnPropertyNames(proto)) {
+            if (!ayrshareInternal.has(name) && typeof proto[name] === 'function' && !name.startsWith('_')) {
+              ayrshireMethods.add(name);
             }
           }
 
-          // Extract methods from our SDK
+          // Extract public async methods from our SDK
           const ourSource = readFileSync('src/index.ts', 'utf-8');
-          const ourProto = ourSource.matchAll(/async\s+(\w+)\s*\(/g);
           const ourInternal = new Set(['request']);
           const ourMethods = new Set();
-          for (const match of ourProto) {
+          for (const match of ourSource.matchAll(/^\s+async\s+(\w+)\s*\(/gm)) {
             if (!ourInternal.has(match[1])) {
               ourMethods.add(match[1]);
             }
           }
+          // Also add non-async public methods
+          for (const match of ourSource.matchAll(/^\s+(\w+)\s*\([^)]*\)\s*(?::\s*\w+)?\s*\{/gm)) {
+            if (!ourInternal.has(match[1]) && match[1] !== 'constructor') {
+              ourMethods.add(match[1]);
+            }
+          }
 
-          // Find methods in Ayrshare that we don't have
-          const missing = [...ayrshireMethods].filter(m => !ourMethods.has(m));
-          // Find methods we have that Ayrshare removed
-          const removed = [...ourMethods].filter(m => !ayrshireMethods.has(m) && m !== 'setProfileKey');
+          const missing = [...ayrshireMethods].filter(m => !ourMethods.has(m)).sort();
+          const removed = [...ourMethods].filter(m => !ayrshireMethods.has(m) && m !== 'setProfileKey').sort();
 
-          console.log(`Ayrshare methods: ${ayrshireMethods.size}`);
-          console.log(`Our methods: ${ourMethods.size}`);
-          console.log(`Missing: ${missing.length > 0 ? missing.join(', ') : 'none'}`);
+          console.log(`Ayrshare SDK methods (${ayrshireMethods.size}): ${[...ayrshireMethods].sort().join(', ')}`);
+          console.log(`Our SDK methods (${ourMethods.size}): ${[...ourMethods].sort().join(', ')}`);
+          console.log(`Missing from our SDK: ${missing.length > 0 ? missing.join(', ') : 'none'}`);
           console.log(`Removed from Ayrshare: ${removed.length > 0 ? removed.join(', ') : 'none'}`);
 
-          // Write outputs
           const outputFile = process.env.GITHUB_OUTPUT;
           if (outputFile) {
-            const fs = await import('fs');
-            const lines = [];
-            lines.push(`missing=${missing.join(', ')}`);
-            lines.push(`removed=${removed.join(', ')}`);
-            lines.push(`has_changes=${missing.length > 0 || removed.length > 0}`);
-            lines.push(`missing_count=${missing.length}`);
-            lines.push(`removed_count=${removed.length}`);
-            fs.appendFileSync(outputFile, lines.join('\n') + '\n');
+            const lines = [
+              `missing=${missing.join(', ')}`,
+              `removed=${removed.join(', ')}`,
+              `has_changes=${missing.length > 0 || removed.length > 0}`,
+              `missing_count=${missing.length}`,
+              `removed_count=${removed.length}`,
+            ];
+            appendFileSync(outputFile, lines.join('\n') + '\n');
           }
           SCRIPT
           node compare.mjs
