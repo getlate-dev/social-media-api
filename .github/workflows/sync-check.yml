@@ -1,0 +1,122 @@
+name: Ayrshare SDK Sync Check
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday at 9am UTC
+
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check for new Ayrshare methods
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install Ayrshare SDK
+        run: npm install social-media-api --no-save
+
+      - name: Extract and compare methods
+        id: compare
+        run: |
+          cat > compare.mjs << 'SCRIPT'
+          import { readFileSync } from 'fs';
+
+          // Extract methods from Ayrshare SDK
+          const ayrshareSource = readFileSync('node_modules/social-media-api/index.js', 'utf-8');
+          const ayrshareProto = ayrshareSource.matchAll(/(?:async\s+)?(\w+)\s*\(/g);
+          const ayrshareConstructor = new Set(['constructor', 'request', 'headers']);
+          const ayrshireMethods = new Set();
+          for (const match of ayrshareProto) {
+            if (!ayrshareConstructor.has(match[1]) && !match[1].startsWith('_')) {
+              ayrshireMethods.add(match[1]);
+            }
+          }
+
+          // Extract methods from our SDK
+          const ourSource = readFileSync('src/index.ts', 'utf-8');
+          const ourProto = ourSource.matchAll(/async\s+(\w+)\s*\(/g);
+          const ourInternal = new Set(['request']);
+          const ourMethods = new Set();
+          for (const match of ourProto) {
+            if (!ourInternal.has(match[1])) {
+              ourMethods.add(match[1]);
+            }
+          }
+
+          // Find methods in Ayrshare that we don't have
+          const missing = [...ayrshireMethods].filter(m => !ourMethods.has(m));
+          // Find methods we have that Ayrshare removed
+          const removed = [...ourMethods].filter(m => !ayrshireMethods.has(m) && m !== 'setProfileKey');
+
+          console.log(`Ayrshare methods: ${ayrshireMethods.size}`);
+          console.log(`Our methods: ${ourMethods.size}`);
+          console.log(`Missing: ${missing.length > 0 ? missing.join(', ') : 'none'}`);
+          console.log(`Removed from Ayrshare: ${removed.length > 0 ? removed.join(', ') : 'none'}`);
+
+          // Write outputs
+          const outputFile = process.env.GITHUB_OUTPUT;
+          if (outputFile) {
+            const fs = await import('fs');
+            const lines = [];
+            lines.push(`missing=${missing.join(', ')}`);
+            lines.push(`removed=${removed.join(', ')}`);
+            lines.push(`has_changes=${missing.length > 0 || removed.length > 0}`);
+            lines.push(`missing_count=${missing.length}`);
+            lines.push(`removed_count=${removed.length}`);
+            fs.appendFileSync(outputFile, lines.join('\n') + '\n');
+          }
+          SCRIPT
+          node compare.mjs
+
+      - name: Create issue if out of sync
+        if: steps.compare.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MISSING="${{ steps.compare.outputs.missing }}"
+          REMOVED="${{ steps.compare.outputs.removed }}"
+          MISSING_COUNT="${{ steps.compare.outputs.missing_count }}"
+          REMOVED_COUNT="${{ steps.compare.outputs.removed_count }}"
+
+          BODY="The weekly sync check found differences between the Ayrshare SDK and our implementation.\n\n"
+
+          if [ "$MISSING_COUNT" -gt 0 ]; then
+            BODY+="### New methods in Ayrshare SDK ($MISSING_COUNT)\n\n"
+            BODY+="These methods exist in Ayrshare's SDK but not in ours:\n\n"
+            IFS=', ' read -ra METHODS <<< "$MISSING"
+            for method in "${METHODS[@]}"; do
+              BODY+="- \`$method\`\n"
+            done
+            BODY+="\nThese need to be added to our SDK and backend routes (as implemented or 501 stubs).\n\n"
+          fi
+
+          if [ "$REMOVED_COUNT" -gt 0 ]; then
+            BODY+="### Removed from Ayrshare SDK ($REMOVED_COUNT)\n\n"
+            BODY+="These methods were in Ayrshare's SDK but appear to have been removed:\n\n"
+            IFS=', ' read -ra METHODS <<< "$REMOVED"
+            for method in "${METHODS[@]}"; do
+              BODY+="- \`$method\`\n"
+            done
+            BODY+="\nConsider deprecating these in our SDK.\n"
+          fi
+
+          # Check if an open issue already exists
+          EXISTING=$(gh issue list --label "sdk-sync" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$(echo -e "$BODY")"
+            echo "Updated existing issue #$EXISTING"
+          else
+            gh issue create \
+              --title "SDK sync: Ayrshare has new/changed methods" \
+              --body "$(echo -e "$BODY")" \
+              --label "sdk-sync"
+          fi
