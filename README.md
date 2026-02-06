@@ -52,7 +52,9 @@ const upload = await social.upload({
 
 ## Supported Methods
 
-All Ayrshare SDK methods are supported. Features not yet available in Late return a 501 status with a descriptive message.
+### Fully Implemented
+
+All core Ayrshare SDK methods are fully supported with identical request/response formats.
 
 | Category | Methods |
 |----------|---------|
@@ -66,6 +68,35 @@ All Ayrshare SDK methods are supported. Features not yet available in Late retur
 | Webhooks | `registerWebhook`, `unregisterWebhook`, `listWebhooks` |
 | Scheduling | `setAutoSchedule`, `deleteAutoSchedule`, `listAutoSchedule` |
 | Hashtags | `checkBannedHashtags` |
+| Reviews | `reviews`, `review`, `replyReview`, `deleteReplyReview` |
+
+### Not Yet Available
+
+These methods are included in the SDK for API compatibility but return a `501` status with a descriptive message. They will be implemented as Late adds support.
+
+| Category | Methods |
+|----------|---------|
+| AI Generation | `generatePost`, `generateRewrite`, `generateTranscription`, `generateTranslation`, `generateAltText` |
+| RSS Feeds | `feedAdd`, `feedDelete`, `feedGet`, `feedUpdate` |
+| Hashtag Tools | `autoHashtags`, `recommendHashtags` |
+| URL Shortening | `shortLink`, `shortLinkAnalytics` |
+| Media Tools | `resizeImage`, `mediaMeta` |
+| Analytics | `analyticsLinks` |
+| Profiles | `unlinkSocial`, `generateJWT` |
+| Brand | `getBrandByUser` |
+
+## Profile-Key Header
+
+To scope requests to a specific profile, pass the `Profile-Key` header:
+
+```typescript
+social.setProfileKey('your_profile_key');
+
+// All subsequent requests will be scoped to this profile
+const history = await social.history({ lastRecords: 10 });
+```
+
+You can find your profile keys via `social.getProfiles()`.
 
 ## License
 
