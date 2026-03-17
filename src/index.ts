@@ -1,16 +1,16 @@
 /**
- * @getlatedev/social-media-api
+ * @zerniodev/social-media-api
  *
  * Drop-in replacement for the Ayrshare `social-media-api` SDK.
  * Change your API key, swap npm packages, zero code changes.
  *
  * Usage:
- *   import SocialMediaAPI from '@getlatedev/social-media-api';
+ *   import SocialMediaAPI from '@zerniodev/social-media-api';
  *   const social = new SocialMediaAPI('your_late_api_key');
  *   await social.post({ post: "Hello!", platforms: ["twitter", "instagram"] });
  */
 
-const BASE_URL = 'https://getlate.dev/api';
+const BASE_URL = 'https://zernio.com/api';
 
 // ─── Exported Types ───
 

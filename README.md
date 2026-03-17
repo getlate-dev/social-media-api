@@ -1,41 +1,41 @@
-# @getlatedev/social-media-api
+# @zerniodev/social-media-api
 
-Drop-in replacement for the [Ayrshare](https://www.ayrshare.com/) `social-media-api` SDK, powered by [Late](https://getlate.dev).
+Drop-in replacement for the [Ayrshare](https://www.ayrshare.com/) `social-media-api` SDK, powered by [Zernio](https://zernio.com).
 
 ## Migration
 
 ```bash
 npm uninstall social-media-api
-npm install @getlatedev/social-media-api
+npm install @zerniodev/social-media-api
 ```
 
 Then update your import:
 
 ```diff
 - import SocialMediaAPI from 'social-media-api';
-+ import SocialMediaAPI from '@getlatedev/social-media-api';
++ import SocialMediaAPI from '@zerniodev/social-media-api';
 
-const social = new SocialMediaAPI('your_late_api_key');
+const social = new SocialMediaAPI('your_zernio_api_key');
 ```
 
 That's it. All method signatures are identical to the Ayrshare SDK.
 
 ## Get Your API Key
 
-1. Sign up at [getlate.dev](https://getlate.dev)
+1. Sign up at [zernio.com](https://zernio.com)
 2. Go to Settings > API Keys
 3. Create a new API key
 
 ## Example
 
 ```typescript
-import SocialMediaAPI from '@getlatedev/social-media-api';
+import SocialMediaAPI from '@zerniodev/social-media-api';
 
-const social = new SocialMediaAPI('your_late_api_key');
+const social = new SocialMediaAPI('your_zernio_api_key');
 
 // Post to multiple platforms
 const result = await social.post({
-  post: "Check out Late - social media scheduling for developers!",
+  post: "Check out Zernio - social media scheduling for developers!",
   platforms: ["twitter", "instagram", "linkedin"],
   mediaUrls: ["https://example.com/image.jpg"],
 });
@@ -72,7 +72,7 @@ All core Ayrshare SDK methods are fully supported with identical request/respons
 
 ### Not Yet Available
 
-These methods are included in the SDK for API compatibility but return a `501` status with a descriptive message. They will be implemented as Late adds support.
+These methods are included in the SDK for API compatibility but return a `501` status with a descriptive message. They will be implemented as Zernio adds support.
 
 | Category | Methods |
 |----------|---------|

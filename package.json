@@ -1,7 +1,7 @@
 {
-  "name": "@getlatedev/social-media-api",
+  "name": "@zerniodev/social-media-api",
   "version": "1.1.0",
-  "description": "Drop-in replacement for the Ayrshare social-media-api SDK, powered by Late",
+  "description": "Drop-in replacement for the Ayrshare social-media-api SDK, powered by Zernio",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -29,15 +29,15 @@
     "linkedin",
     "tiktok",
     "youtube",
-    "late",
+    "zernio",
     "ayrshare"
   ],
-  "author": "Late <support@getlate.dev>",
+  "author": "Zernio <support@zernio.com>",
   "license": "MIT",
-  "homepage": "https://getlate.dev",
+  "homepage": "https://zernio.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/getlate-dev/social-media-api"
+    "url": "https://github.com/zernio-dev/social-media-api"
   },
   "devDependencies": {
     "tsup": "^8.0.0",
