@@ -381,6 +381,23 @@ class SocialMediaAPI {
     return this.request('/profiles/generateJWT', { method: 'POST', body: options });
   }
 
+  // ─── Twitter/X BYO (bring-your-own app credentials) ───
+  // Mirrors Ayrshare's setTwitterByo / clearTwitterByo. Lets a profile post through
+  // its own X developer app instead of the shared app.
+
+  async setTwitterByo(options: {
+    consumerKey: string;
+    consumerSecret: string;
+    accessToken: string;
+    accessTokenSecret: string;
+  }): Promise<{ status: string }> {
+    return this.request('/twitter/byo', { method: 'POST', body: options });
+  }
+
+  async clearTwitterByo(): Promise<{ status: string }> {
+    return this.request('/twitter/byo', { method: 'DELETE' });
+  }
+
   // ─── Media ───
 
   async upload(options: UploadOptions): Promise<{ status: string; url?: string; [key: string]: any }> {
